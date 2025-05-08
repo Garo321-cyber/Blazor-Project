@@ -1,0 +1,69 @@
+public class TaskModel
+{
+    public int Id { get; set; }
+    public string Title { get; set; }
+    public string Description { get; set; }
+    public DateTime DueDate { get; set; }
+    public string Status { get; set; }
+}
+
+
+public class TaskService
+{
+    private readonly List<TaskModel> tasks = new();
+
+    public List<TaskModel> GetTasks() => tasks;
+
+    public void AddTask(TaskModel task) => tasks.Add(task);
+
+    public void UpdateTask(TaskModel task)
+    {
+        var existingTask = tasks.FirstOrDefault(t => t.Id == task.Id);
+        if (existingTask != null)
+        {
+            existingTask.Title = task.Title;
+            existingTask.Description = task.Description;
+            existingTask.DueDate = task.DueDate;
+            existingTask.Status = task.Status;
+        }
+    }
+
+    public void DeleteTask(int id) => tasks.RemoveAll(t => t.Id == id);
+}
+
+
+@inject TaskService taskService
+
+<h3>Task List</h3>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Description</th>
+            <th>Due Date</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var task in taskService.GetTasks())
+        {
+            <tr>
+                <td>@task.Title</td>
+                <td>@task.Description</td>
+                <td>@task.DueDate.ToShortDateString()</td>
+                <td>@task.Status</td>
+                <td>
+                    <button class="btn btn-danger" @onclick="() => taskService.DeleteTask(task.Id)">Delete</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+
+public class TaskDbContext : DbContext
+{
+    public DbSet<TaskModel> Tasks { get; set; }
+
+    public TaskDbContext(DbContextOptions<TaskDbContext> options) : base(options) { }
+}
